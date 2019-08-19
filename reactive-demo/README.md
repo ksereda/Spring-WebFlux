@@ -1,5 +1,9 @@
 ### This is simple example Spring Reactive
 
+This example was made to show how Spring Reactive works.
+
+____
+
 Start application and go to browser on
 
     http://localhost:8080/start
