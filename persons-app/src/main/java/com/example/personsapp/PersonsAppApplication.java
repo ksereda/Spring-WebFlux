@@ -18,6 +18,7 @@ public class PersonsAppApplication {
 		SpringApplication.run(PersonsAppApplication.class, args);
 	}
 
+	// This code creates a Flux of four sample Persons objects, saves them to the DB. Then, queries all the Persons from the DB and print them to the console.
 	@Bean
 	CommandLineRunner run(PersonRepository personRepository) {
 		return args -> {
