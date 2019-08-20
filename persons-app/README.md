@@ -134,10 +134,50 @@ Because these settings are specified in application.properties
 
 you must see
 
-    person
+    persons
     positions
 
 to get data use
 
-    db.person.find ()
+    db.persons.find ()
     db.positions.find ()
+    
+_____
+
+### Server Side Events
+ 
+If you go to
+
+    http://localhost:8080/position/stream/positions
+    
+Positions are Sent to the client as Server Sent Events.
+
+If you are go to 
+
+    http://localhost:8080/position/stream/persons
+    
+You will receive default Person every 1 second.
+    
+_____
+
+### CommandLineRunner
+
+You can also add this in main class for automatically creation Persons when application starting
+
+	@Bean
+	CommandLineRunner run(PersonRepository personRepository) {
+		return args -> {
+			personRepository.deleteAll()
+					.thenMany(Flux.just(
+							new Person("1", Sex.MAN, "Kirill", "Sereda", "30", "programming"),
+							new Person("2", Sex.MAN, "Mike", "Nikson", "28", "music"),
+							new Person("3", Sex.MAN, "Oliver", "Spenser", "33", "sport"),
+							new Person("4", Sex.WOMEN, "Olga", "Ivanova", "25", "movie")
+
+					)
+							.flatMap(personRepository::save))
+					.thenMany(personRepository.findAll())
+					.subscribe(System.out::println);
+
+		};
+	}

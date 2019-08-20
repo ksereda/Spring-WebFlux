@@ -34,15 +34,15 @@ public class PositionController {
     }
 
     @PostMapping("/createPosition")
-    public Mono<Position> createTweets(@Valid @RequestBody Position position) {
+    public Mono<Position> createPosition(@Valid @RequestBody Position position) {
         return positionRepository.save(position);
     }
 
     @GetMapping("/position/{id}")
     public Mono<ResponseEntity<Position>> getPositionById(@PathVariable(value = "id") String positionId) {
         return positionRepository.findById(positionId)
-                .map(savedPosition -> ResponseEntity.ok(savedPosition))
-                .defaultIfEmpty(ResponseEntity.notFound().build());
+                .map(savedPosition -> ResponseEntity.ok(savedPosition))  // then the map operator is called on this Position to wrap it in a ResponseEntity object with status code 200 OK
+                .defaultIfEmpty(ResponseEntity.notFound().build());   // finally there is a call to defaultIfEmpty to build an empty ResponseEntity with status 404 NOT FOUND if the Position was not found.
     }
 
     @PutMapping("/position/{id}")
@@ -50,22 +50,27 @@ public class PositionController {
                                                    @Valid @RequestBody Position position) {
         return positionRepository.findById(positionId)
                 .flatMap(existingPosition -> {
-                    existingPosition.setPositionName(position.getPositionName());
+                    existingPosition.setPositionName(position.getPositionName());  // then calls flatMap with this movie to update its entries using its setters and the values from the Position passed as argument.
                     return positionRepository.save(existingPosition);
                 })
-                .map(updatePosition -> new ResponseEntity<>(updatePosition, HttpStatus.OK))
+                .map(updatePosition -> new ResponseEntity<>(updatePosition, HttpStatus.OK))  // Then it saves them to the database and wraps this updated Position in a ResponseEntity with status code 200 OK in case of success or 404 NOT FOUND in case of failure.
                 .defaultIfEmpty(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
     @DeleteMapping("/position/{id}")
     public Mono<ResponseEntity<Void>> deletePosition(@PathVariable(value = "id") String positionId) {
 
-        return positionRepository.findById(positionId)
+        return positionRepository.findById(positionId)  // First, you search the Position you want to delete.
                 .flatMap(existingPosition ->
-                        positionRepository.delete(existingPosition)
+                        positionRepository.delete(existingPosition)  // Next, you delete and return 200 OK to show your delete was successful
                             .then(Mono.just(new ResponseEntity<Void>(HttpStatus.OK)))
                 )
-                .defaultIfEmpty(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+                .defaultIfEmpty(new ResponseEntity<>(HttpStatus.NOT_FOUND));  // or you return 404 NOT FOUND to say the Position was not found
+    }
+
+    @DeleteMapping("/deleteAllPositions")
+    public Mono<Void> deleteAllPositions(){
+        return positionRepository.deleteAll();
     }
 
     // Positions are Sent to the client as Server Sent Events
