@@ -1,8 +1,11 @@
 package com.example.personsapp.controller;
 
+import com.example.personsapp.entity.Person;
 import com.example.personsapp.entity.Position;
+import com.example.personsapp.entity.Sex;
 import com.example.personsapp.exception.PositionNotFoundException;
 import com.example.personsapp.payload.ErrorResponse;
+import com.example.personsapp.repository.PersonRepository;
 import com.example.personsapp.repository.PositionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
@@ -14,6 +17,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import javax.validation.Valid;
+import java.time.Duration;
 
 @RestController
 @RequestMapping("/position")
@@ -21,6 +25,8 @@ public class PositionController {
 
     @Autowired
     private PositionRepository positionRepository;
+    @Autowired
+    private PersonRepository personRepository;
 
     @GetMapping("/positions")
     public Flux<Position> getAllPositions() {
@@ -66,6 +72,13 @@ public class PositionController {
     @GetMapping(value = "/stream/positions", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<Position> streamAllPositions() {
         return positionRepository.findAll();
+    }
+
+    // Get default value every 1 second
+    @GetMapping(value = "/stream/persons", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<Person> emitPersons() {
+        return Flux.interval(Duration.ofSeconds(1))
+                .map(val -> new Person( "" + val, Sex.MAN, "default", "default", "", "default"));
     }
 
     // Exception Handling Examples (These can be put into a @ControllerAdvice to handle exceptions globally)

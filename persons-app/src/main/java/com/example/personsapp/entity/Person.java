@@ -18,7 +18,7 @@ public class Person {
 	private Sex sex;
 	private String firstName;
 	private String lastName;
-	private int age;
+	private String age;
 	private String interests;
 
 }
