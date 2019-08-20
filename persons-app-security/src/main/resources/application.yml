@@ -1,0 +1,12 @@
+spring:
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/dbpersons
+  security:
+    oauth2:
+      resourceserver:
+#        id: http://localhost:8080/position
+        id: http://localhost:8080/persons
+        jwk:
+          jwk-set-uri: https://dev-0if651u7.auth0.com/.well-known/jwks.json
+          issuer-uri: https://dev-0if651u7.auth0.com/
