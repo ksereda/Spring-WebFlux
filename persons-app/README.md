@@ -146,18 +146,67 @@ _____
 
 ### Server Side Events
  
-If you go to
+- If you will go to
 
-    http://localhost:8080/position/stream/positions
+        
+        http://localhost:8080/position/stream/positions
     
 Positions are Sent to the client as Server Sent Events.
 
-If you are go to 
+In code
 
-    http://localhost:8080/position/stream/persons
+        // Positions are Sent to the client as Server Sent Events
+        @GetMapping(value = "/stream/positions", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+        public Flux<Position> streamAllPositions() {
+            return positionRepository.findAll();
+        }
+
+- If you will go to
+
     
-You will receive default Person every 1 second.
+        http://localhost:8080/position/stream/persons
+        
+Persons are Sent to the client as Server Sent Events
+
+In code
+
+         // Persons are Sent to the client as Server Sent Events
+         @GetMapping(value = "/stream/persons", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+         public Flux<Person> streamAllPersons() {
+             return personRepository.findAll();
+         }   
+
+- If you will go to
+
+   
+         http://localhost:8080/position/stream/persons/default
+         
+You will get default value every 1 second
+
+In code
+
+        // Get default value every 1 second
+        @GetMapping(value = "/stream/persons/default", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+        public Flux<Person> emitPersons() {
+            return Flux.interval(Duration.ofSeconds(1))
+                    .map(val -> new Person( "" + val, Sex.MAN, "default", "default", "", "default"));
+        }
+
+- If you will go to 
+
+   
+         http://localhost:8080/position/stream/persons/delay
     
+You will Get all Persons from the DB (every 1 second you will receive 1 record from the DB)
+
+In code
+
+         // Get all Persons from the database (every 1 second you will receive 1 record from the DB)
+        @GetMapping(value = "/stream/persons/delay", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+        public Flux<Person> streamAllPersonsDelay() {
+            return personRepository.findAll().delayElements(Duration.ofSeconds(1));
+        }
+ 
 _____
 
 ### CommandLineRunner
@@ -172,7 +221,9 @@ You can also add this in main class for automatically creation Persons when appl
 							new Person("1", Sex.MAN, "Kirill", "Sereda", "30", "programming"),
 							new Person("2", Sex.MAN, "Mike", "Nikson", "28", "music"),
 							new Person("3", Sex.MAN, "Oliver", "Spenser", "33", "sport"),
-							new Person("4", Sex.WOMEN, "Olga", "Ivanova", "25", "movie")
+							new Person("4", Sex.WOMEN, "Olga", "Ivanova", "25", "movie"),
+							new Person("5", Sex.WOMEN, "Anna", "Karenina", "23", "dance"),
+                            new Person("6", Sex.WOMEN, "Olga", "Petrova", "27", "programming")
 
 					)
 							.flatMap(personRepository::save))

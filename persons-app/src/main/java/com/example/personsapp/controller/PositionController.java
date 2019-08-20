@@ -79,11 +79,23 @@ public class PositionController {
         return positionRepository.findAll();
     }
 
-    // Get default value every 1 second
+    // Persons are Sent to the client as Server Sent Events
     @GetMapping(value = "/stream/persons", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<Person> streamAllPersons() {
+        return personRepository.findAll();
+    }
+
+    // Get default value every 1 second
+    @GetMapping(value = "/stream/persons/default", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<Person> emitPersons() {
         return Flux.interval(Duration.ofSeconds(1))
                 .map(val -> new Person( "" + val, Sex.MAN, "default", "default", "", "default"));
+    }
+
+    // Get all Persons from the database (every 1 second you will receive 1 record from the DB)
+    @GetMapping(value = "/stream/persons/delay", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<Person> streamAllPersonsDelay() {
+        return personRepository.findAll().delayElements(Duration.ofSeconds(1));
     }
 
     // Exception Handling Examples (These can be put into a @ControllerAdvice to handle exceptions globally)

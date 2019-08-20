@@ -27,7 +27,9 @@ public class PersonsAppApplication {
 							new Person("1", Sex.MAN, "Kirill", "Sereda", "30", "programming"),
 							new Person("2", Sex.MAN, "Mike", "Nikson", "28", "music"),
 							new Person("3", Sex.MAN, "Oliver", "Spenser", "33", "sport"),
-							new Person("4", Sex.WOMEN, "Olga", "Ivanova", "25", "movie")
+							new Person("4", Sex.WOMEN, "Olga", "Ivanova", "25", "movie"),
+							new Person("5", Sex.WOMEN, "Anna", "Karenina", "23", "dance"),
+							new Person("6", Sex.WOMEN, "Olga", "Petrova", "27", "programming")
 
 					)
 							.flatMap(personRepository::save))
