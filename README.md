@@ -20,7 +20,8 @@ They are designed to handle both synchronous or asynchronous operations, and all
 
 There is 2 different web stack in Spring 5 - `spring-web-mvc` and `spring-web-reactive.` 
 Each module is optional.
-Applications can use one or the other module or, in some cases, both?—?for example, Spring MVC controllers with the reactive WebClient.
+Applications can use one or the other module or, in some cases, both?—? 
+for example, Spring MVC controllers with the reactive `WebClient`.
  
 #### What is Spring WebFlux ?
 

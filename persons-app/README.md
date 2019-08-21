@@ -232,3 +232,9 @@ You can also add this in main class for automatically creation Persons when appl
 
 		};
 	}
+
+______
+
+### Router and handler
+
+See `person-app-2` on github
