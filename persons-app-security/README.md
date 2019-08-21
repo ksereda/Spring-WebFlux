@@ -1,5 +1,10 @@
 ### Persons application with Spring Security JWT
 
+This is small example how to create reactive REST API with SpringBoot and MongoDB + JWT Security with `auth0.com`.
+
+_______
+
+
 You can safely receive data with a GET request without using a token.
 
 But you cannot create a user (or Position) without a token.

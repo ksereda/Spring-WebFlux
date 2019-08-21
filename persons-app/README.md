@@ -1,7 +1,11 @@
 ## Persons service
 
-This is small example how to create reactive REST API with SpringBoot and MongoDB
+This is small example how to create reactive REST API with SpringBoot and MongoDB.
 
+Here I want to show the simplest option using the `Controller`.
+In the second part (`person-app-2`), we will use a `Router` and a `Handler` instead of a `Controller`.
+
+Also here, for clarity, 2 slightly different options for `Person` and `Position` in service layer.
 ____
 
 ### Start application.
