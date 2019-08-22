@@ -38,14 +38,14 @@ public class PositionController {
         return positionRepository.save(position);
     }
 
-    @GetMapping("/position/{id}")
+    @GetMapping("/getPosition/{id}")
     public Mono<ResponseEntity<Position>> getPositionById(@PathVariable(value = "id") String positionId) {
         return positionRepository.findById(positionId)
                 .map(savedPosition -> ResponseEntity.ok(savedPosition))  // then the map operator is called on this Position to wrap it in a ResponseEntity object with status code 200 OK
                 .defaultIfEmpty(ResponseEntity.notFound().build());   // finally there is a call to defaultIfEmpty to build an empty ResponseEntity with status 404 NOT FOUND if the Position was not found.
     }
 
-    @PutMapping("/position/{id}")
+    @PutMapping("/updatePosition/{id}")
     public Mono<ResponseEntity<Position>> updatePosition(@PathVariable(value = "id") String positionId,
                                                    @Valid @RequestBody Position position) {
         return positionRepository.findById(positionId)
@@ -57,7 +57,7 @@ public class PositionController {
                 .defaultIfEmpty(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
-    @DeleteMapping("/position/{id}")
+    @DeleteMapping("/deletePosition/{id}")
     public Mono<ResponseEntity<Void>> deletePosition(@PathVariable(value = "id") String positionId) {
 
         return positionRepository.findById(positionId)  // First, you search the Position you want to delete.
