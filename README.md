@@ -8,6 +8,14 @@ On the github, you can see several packages in which different examples are exam
 
 _____
 
+#### Reactive ?
+
+Following `Spring WebFlux` documentation the `Spring Framework` uses `Reactor` internally for its own reactive support. 
+`Reactor` is a `Reactive Streams` implementation that further extends the basic `Reactive Streams` `Publisher` contract with the `Flux` and `Mono` composable API types to provide declarative operations on data sequences of `0..N` and `0..1`. 
+On the server-side Spring supports annotation based and functional programming models. 
+Annotation model use @Controller and the other annotations supported also with Spring MVC. 
+Reactive controller will be very similar to standard REST controller for synchronous services instead of it uses Flux, Mono and Publisher objects.
+
 #### Why using Reactive types?
 Reactive types are not intended to allow you to process your requests or data faster, in fact they will introduce a small overhead compared to regular blocking processing. 
 Their strength lies in their capacity to serve more request concurrently, and to handle operations with latency, such as requesting data from a remote server, more efficiently. 
