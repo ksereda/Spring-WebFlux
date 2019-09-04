@@ -65,5 +65,12 @@ public class Main2 {
         disposable.dispose();
         System.out.println("Cancelling subscription");
 
+
+        System.out.println("\nExample 7:");
+        Flux.just(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+                .skip(3)
+                .limitRequest(5)
+                .subscribe(value -> System.out.println("Value: " + value));
+
     }
 }
