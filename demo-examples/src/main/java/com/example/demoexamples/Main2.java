@@ -3,7 +3,6 @@ package com.example.demoexamples;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
 import java.time.Duration;
 import java.util.List;
 
@@ -71,6 +70,18 @@ public class Main2 {
                 .skip(3)
                 .limitRequest(5)
                 .subscribe(value -> System.out.println("Value: " + value));
+
+
+        System.out.println("\nExample 8:");
+        // Create my check and error
+        Flux<Integer> ints = Flux.range(1, 4)
+                .map(i -> {
+                    if (i <= 3) return i;
+                    throw new RuntimeException("Got to 4");
+                });
+        ints.subscribe(System.out::println,
+                error -> System.err.println("Error: " + error));
+
 
     }
 }
