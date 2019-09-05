@@ -28,18 +28,20 @@ public class Main6 {
         // Create a multiplication table for the number 3
 
         System.out.println("\nExample 1:");
+
         Flux<String> flux = Flux.generate(
-                () -> 0,    // устанавливаем начальное значение
+                () -> 0,    // set the initial value
                 (state, sink) -> {
-                    sink.next("3 x " + state + " = " + 3 * state);  // используем начальное значение для строки в таблице умножения = 3
-                    if (state == 10) sink.complete();    // остановимся, когда дойдем доо числа 10
-                    return state + 1;  // возвращаем новое состояние, которое мы используем в следующем вызове
+                    sink.next("3 x " + state + " = " + 3 * state);  // use the initial value for the row in the multiplication table = 3
+                    if (state == 10) sink.complete();    // stop when we get to number 10
+                    return state + 1;  // return the new state that we use in the next call
                 });
 
 
         System.out.println("\nExample 2:");
+
         Flux<String> flux2 = Flux.generate(
-                AtomicLong::new,   // мы генерируем изменяемый объект
+                AtomicLong::new,   // we generate a mutable object
                 (state, sink) -> {
                     long i = state.getAndIncrement();
                     sink.next("3 x " + i + " = " + 3*i);
@@ -49,6 +51,7 @@ public class Main6 {
 
 
         System.out.println("\nExample 3:");
+
         Flux<String> flux3 = Flux.generate(
                 AtomicLong::new,
                 (state, sink) -> {
