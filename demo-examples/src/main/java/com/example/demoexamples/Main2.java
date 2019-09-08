@@ -83,5 +83,11 @@ public class Main2 {
                 error -> System.err.println("Error: " + error));
 
 
+        System.out.println("\nExample 9:");
+        // Create a Flux that emits numbers from 1 to 10 every 100 ms
+        Flux.interval(Duration.ofMillis(100)).take(10).subscribe(value -> System.out.println("Value: " + value));
+
+
+
     }
 }
