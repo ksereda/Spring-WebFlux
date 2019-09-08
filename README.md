@@ -17,6 +17,7 @@ Annotation model use @Controller and the other annotations supported also with S
 Reactive controller will be very similar to standard REST controller for synchronous services instead of it uses Flux, Mono and Publisher objects.
 
 #### Why using Reactive types?
+
 Reactive types are not intended to allow you to process your requests or data faster, in fact they will introduce a small overhead compared to regular blocking processing. 
 Their strength lies in their capacity to serve more request concurrently, and to handle operations with latency, such as requesting data from a remote server, more efficiently. 
 They allow you to provide a better quality of service and a predictable capacity planning by dealing natively with time and latency without consuming more resources. 
@@ -60,3 +61,261 @@ The specification consists of the following items:
 
 The `Reactive Streams` specification is a standard and since Java 9, it is included in Java with the Flow API. 
 Take a closer look at the Reactive Streams specification and the Java 9 Flow API. As you will notice, the interfaces for `Publisher, Subscriber, Subscription, and Processor` are identical.
+
+
+### Errors in Spring WebFlux
+
+- Handling Errors at a Functional Level
+
+  There are two key operators built into the Mono and Flux APIs to handle errors at a functional level.
+  
+    - `onErrorReturn`
+    
+        It return a static default value whenever an error occurs.
+    
+    - `onErrorResume`
+    
+    - `DoOnError `
+    
+        It will only perform side effects and assuming the findById are will return a Mono.Error() if it fails something like this should work.
+  
+- Handling Errors at a Global Level
+    - Customize the Global Error Response Attributes
+    - Implement the Global Error Handler
+
+
+
+Примеры обработки в случае если данных нет
+
+    @GetMapping("/get/{id}")
+    public Mono<ResponseEntity<Bucket>> getBucketById(@PathVariable(value = "id") String bucketId) {
+        return bucketRepository.findById(bucketId)
+                .map(saveBucket -> ResponseEntity.ok(saveBucket))
+                .defaultIfEmpty(ResponseEntity.notFound().build()); 
+                .switchIfEmpty(Mono.error(new BucketNotFoundException("Data not found")));
+                .defaultIfEmpty(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+
+### WebClient
+
+WebClient, представленный в Spring 5, является неблокирующим клиентом с поддержкой Reactive Streams (реактивный HTTP-клиент).
+WebClient является частью реактивной веб-среды (фреймворка) Spring 5 под названием Spring WebFlux. 
+Для работы с ним надо включить модуль spring-webflux в проект.
+вам нужна Spring Boot версии 2.xx для использования модуля Spring WebFlux.
+
+Он был создан как часть модуля Spring Web Reactive и будет заменять классический RestTemplate в этих сценариях. Новый клиент является реактивным, неблокирующим решением, работающим по протоколу HTTP / 1.1.
+
+Создание:
+
+WebCLient можно создать при помощи create
+
+    WebClient webClient = WebClient.create("https://api.github.com");
+
+Или при помощи builder
+
+        public WebClientService() {
+            this.webClient = WebClient.builder()
+                    .baseUrl(API_BASE_URL)
+                    .defaultHeader(HttpHeaders.CONTENT_TYPE, API_MIME_TYPE)
+                    .defaultHeader(HttpHeaders.USER_AGENT, USER_AGENT)
+                    .build();
+        }
+        
+
+В нашем примере мы используем WebClient для получения данных из базы данных через первый сервис (gallery-service) в реактивной среде.
+
+    public Flux<Bucket> getDataByWebClient() {
+        return webClient
+                .get()
+                .uri("/stream/buckets/delay")
+                .exchange()
+                .flatMapMany(clientResponse -> clientResponse.bodyToFlux(Bucket.class));
+    }
+    
+- мы можем указать какой именно запрос мы отправляем параметром
+    
+        .get()
+        .post()
+        .put()
+        .delete()
+        .options()
+        .head()
+        .patch()
+        
+- предоставление URL мы передаем через 
+
+        .uri
+        
+для создания URI запроса вы можете также использовать URIBuilder
+
+    .uri(uriBuilder -> uriBuilder.path("/user/repos")
+                        .queryParam("sort", "updated")
+                        .queryParam("direction", "desc")
+                        .build())
+                        
+В итоге ваш финальный клиент будет выглядеть подобным образом
+
+    public Flux<MyRepo> listRepositories(String username, String token) {
+         return webClient.get()
+                .uri(uriBuilder -> uriBuilder.path("/user/repos")
+                        .queryParam("sort", "updated")
+                        .queryParam("direction", "desc")
+                        .build())
+                .header("Authorization", "Basic " + Base64Utils
+                        .encodeToString((username + ":" + token).getBytes(UTF_8)))
+                .retrieve()
+                .bodyToFlux(MyRepo.class);
+    }
+
+        
+- мы можем установить тело запроса (Если шлем POST запрос)
+
+если мы хотим установить тело запроса - есть два доступных способа:
+ 
+ Первый способ - заполнить его BodyInserter или делегировать эту работу Publisher 
+
+  .body(BodyInserters.fromPublisher(Mono.just("data")), String.class);
+ 
+  
+  BodyInserter - это интерфейс, отвечающий за заполнение тела ReactiveHttpOutputMessage.
+  BodyInserters Класс содержит методы , чтобы создать BodyInserterиз Object, Publisher, Resource, FormData, и MultipartDataт.д. 
+  
+  Publisher - это реактивный компонент, отвечающий за предоставление потенциально неограниченного числа последовательных элементов.
+  
+ Второй способ - это метод body , который является ярлыком для исходного метода body (BodyInserter insertter) .
+ 
+  с помощью одного объекта
+  
+   .body(BodyInserters.fromObject("data"));
+   
+   c помощью MultiValueMap
+   
+   LinkedMultiValueMap map = new LinkedMultiValueMap();
+   
+   map.add("key1", "value1");
+   map.add("key2", "value2");
+   
+   BodyInserter<MultiValueMap, ClientHttpRequest> inserter2
+    = BodyInserters.fromMultipartData(map);
+    
+    
+Если у вас есть тело запроса в форме a Mono или a Flux, то вы можете напрямую передать его body()методу в WebClient.
+Если у вас есть действительное значение вместо Publisher( Flux/ Mono), вы можете использовать syncBody().
+
+
+
+- мы можем установить заголовки, куки, приемлемые типы носителей.
+
+существует дополнительная поддержка наиболее часто используемых заголовков, таких как __ «If-None-Match», «If-Modified-Since», «Accept», «Accept-Charset».
+
+     .header(HttpHeaders.CONTENT__TYPE, MediaType.APPLICATION__JSON__VALUE)
+    .accept(MediaType.APPLICATION__JSON, MediaType.APPLICATION__XML)
+    .acceptCharset(Charset.forName("UTF-8"))
+    .ifNoneMatch("** ")
+    .ifModifiedSince(ZonedDateTime.now())
+
+
+
+
+Фильтры
+
+WebClient поддерживает фильтрацию запросов с использованием ExchangeFilterFunction. Вы можете использовать функции фильтра для перехвата и изменения запроса любым способом. Например, вы можете использовать функцию фильтра для добавления Authorizationзаголовка к каждому запросу или для регистрации деталей каждого запроса.
+
+Он принимает два аргумента -
+   
+   ClientRequestи
+   Следующее ExchangeFilterFunctionв цепочке фильтров.
+   
+Например Добавление базовой аутентификации с использованием функции фильтра.
+вы можете добавить эту логику в функцию фильтра при создании WebClient.
+
+    WebClient webClient = WebClient.builder()
+            .baseUrl(MY_REPO_API_BASE_URL)
+            .defaultHeader(HttpHeaders.CONTENT_TYPE, GITHUB_V3_MIME_TYPE)
+            .filter(ExchangeFilterFunctions
+                    .basicAuthentication(username, token))
+            .build();   
+
+Теперь вам не нужно добавлять Authorizationзаголовок в каждом запросе. Функция фильтра будет перехватывать каждый запрос WebClient и добавлять этот заголовок.
+
+
+
+Получение ответа
+
+Для этого есть методы exchange или retrieve
+
+retrieve - предоставляет кратчайший путь для непосредственного извлечения тела.
+ retrieve()Метод является самым простым способом получить тело ответа. 
+ Однако, если вы хотите иметь больше контроля над ответом, вы можете использовать exchange()метод, который имеет доступ ко всему, ClientResponseвключая все заголовки и тело
+
+
+exchange - предоставляет ClientResponse вместе со своим статусом, заголовки
+
+
+
+Для тетсирования представлен WebTestClient.
+У него очень похожий API на WebClient , и он делегирует большую часть работы внутреннему экземпляру WebClient , ориентируясь главным образом на предоставление тестового контекста. Класс DefaultWebTestClient представляет собой единую реализацию интерфейса.
+Клиент для тестирования может быть привязан к реальному серверу или работать с конкретными контроллерами или функциями. 
+
+WebTestClient testClient = WebTestClient
+  .bindToServer()
+  .baseUrl("http://localhost:8080")
+  .build();
+  
+  
+  
+  
+  
+Какое главное отличие WebClient от RestTemplate ?
+
+Основным отличием является то, что RestTemplate продолжает использовать API сервлетов Java и выполняет синхронную блокировку. Это означает, что вызов, выполненный с использованием RestTemplate, должен ждать, пока ответ не вернется, чтобы продолжить.
+С другой стороны, поскольку WebClient является асинхронным, вызову rest не нужно ждать ответа. Вместо этого, когда есть ответ, будет предоставлено уведомление.
+
+
+
+
+Обработка ошибок WebClient
+
+retrieve() Метод , в WebClient бросает WebClientResponseExceptionвсякий раз , когда ответ с кодом состояния 4xx или 5xx получен.
+
+    public Flux<MyRepo> listGithubRepositories() {
+         return webClient.get()
+                .uri("/user/repos?sort={sortField}&direction={sortDirection}", 
+                         "updated", "desc")
+                .retrieve()
+                .onStatus(HttpStatus::is4xxClientError, clientResponse ->
+                    Mono.error(new MyCustomClientException())
+                )
+                .onStatus(HttpStatus::is5xxServerError, clientResponse ->
+                    Mono.error(new MyCustomServerException())
+                )
+                .bodyToFlux(MyRepo.class);
+    
+    }
+    
+exchange() метод не генерирует исключения в случае ответов 4xx или 5xx. Вам необходимо самостоятельно проверить коды состояния и обрабатывать их так, как вы хотите.
+
+
+Вы также можете проверить статусы состояний и передать какое-то свое кастомное выполнение для их реализаций
+
+        public Flux<Bucket> getDataByWebClient() {
+            return webClient
+                    .get()
+                    .uri("/getAll")
+                    .retrieve()
+                    .onStatus(HttpStatus::is4xxClientError, clientResponse ->
+                            Mono.error(new RuntimeException("4xx"))
+                    )
+                    .onStatus(HttpStatus::is5xxServerError, clientResponse ->
+                            Mono.error(new RuntimeException("5xx"))
+                    )
+                    .onStatus(HttpStatus::is3xxRedirection, clientResponse ->
+                            Mono.error(new MyCustomServerException())
+                    )
+                    .onStatus(HttpStatus::isError, clientResponse ->
+                            Mono.error(new MyCustomServerException())
+                    )
+                    .bodyToFlux(Bucket.class);
+        }
+        
