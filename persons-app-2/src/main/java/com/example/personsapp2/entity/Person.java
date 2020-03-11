@@ -20,5 +20,6 @@ public class Person {
 	private String lastName;
 	private String age;
 	private String interests;
+	private String email;
 
 }
