@@ -7,7 +7,7 @@ import reactor.core.scheduler.Schedulers;
  * ParallelFlux
  */
 
-public class Main10 {
+public class ParallelFlux_operator {
     public static void main(String[] args) {
 
         System.out.println("\nExample 1:");

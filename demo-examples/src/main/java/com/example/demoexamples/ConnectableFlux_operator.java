@@ -7,7 +7,7 @@ import reactor.core.publisher.Flux;
  * ConnectableFlux
  */
 
-public class Main8 {
+public class ConnectableFlux_operator {
     public static void main(String[] args) throws InterruptedException {
 
         System.out.println("connect");
